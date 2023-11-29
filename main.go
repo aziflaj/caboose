@@ -6,6 +6,8 @@ import (
 	"net"
 	"strings"
 
+	"github.com/aziflaj/caboose/megahash"
+	"github.com/aziflaj/caboose/omalley"
 	"github.com/aziflaj/caboose/sarge"
 )
 
@@ -15,6 +17,9 @@ func main() {
 		panic(err)
 	}
 	defer l.Close()
+
+	// global store
+	store := megahash.NewMegahashTable()
 	log.Println("Listening on port 6900")
 
 	for {
@@ -23,11 +28,11 @@ func main() {
 			panic(err)
 		}
 
-		go requestHandler(conn)
+		go requestHandler(conn, store)
 	}
 }
 
-func requestHandler(conn net.Conn) {
+func requestHandler(conn net.Conn, store *megahash.MegahashTable) {
 	data, err := readFromConn(conn)
 	if err != nil {
 		panic(err)
@@ -40,22 +45,13 @@ func requestHandler(conn net.Conn) {
 	}
 
 	reqArr := req.([]string)
+	// log.Println(reqArr)
 
-	// Step 2: DO THE AI (extremely nested if-else)
-	var res string
-	if reqArr[0] == "PING" {
-		if len(reqArr) > 1 {
-			res = sarge.SerializeArray(reqArr[1:])
-		} else {
-			res = sarge.SerializeBulkString("PONG")
-		}
-	} else if reqArr[0] == "ECHO" {
-		res = sarge.SerializeArray(reqArr[1:])
-	} else {
-		// format given command
-		command := strings.Join(reqArr, " ")
-		res = sarge.SerializeError("Unknown command: " + command)
-	}
+	// Step 2: Very Intricate AI (deeply nested if-else)
+	command := reqArr[0]
+	args := reqArr[1:]
+	// log.Println(command, args)
+	res := omalley.Execute(store, command, args)
 
 	// Step 3: respond with RESP
 	io.Copy(conn, strings.NewReader(res))

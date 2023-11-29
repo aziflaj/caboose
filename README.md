@@ -1,6 +1,6 @@
 # Caboose
 
-A Redis clone built in Go, because I had nothing better to do this afternoon. Named after [Michael J. Caboose](https://rvb.fandom.com/wiki/Michael_J._Caboose).
+A Redis clone built in Go, because I had nothing better to do this afternoon. Named after [Captain Michael J. Caboose](https://rvb.fandom.com/wiki/Michael_J._Caboose).
 
 ## How to use it?
 
