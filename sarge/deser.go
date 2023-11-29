@@ -36,7 +36,7 @@ func ParseRESPType(input string) (RESPType, error) {
 }
 
 func ParseBulkString(input string) string {
-	reader := readerForString(input[1:])
+	reader := readerForString(input)
 
 	// read the string length
 	line, _, err := reader.ReadLine()
@@ -44,20 +44,29 @@ func ParseBulkString(input string) string {
 		panic(err)
 	}
 
+	strLine := string(line)
+
 	// convert the string length to an int
-	length, err := strconv.Atoi(string(line))
+	length, err := strconv.Atoi(strLine[1:])
 	if err != nil {
 		panic(err)
 	}
 
-	// read the string
-	buf := make([]byte, length)
-	_, err = reader.Read(buf)
+	str, err := readStringFromReader(reader, length)
 	if err != nil {
 		panic(err)
 	}
 
-	return string(buf)
+	return str
+}
+
+func readStringFromReader(reader *bufio.Reader, length int) (string, error) {
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		return "", err
+	}
+
+	return string(line[:length]), nil
 }
 
 func ParseSimpleString(input string) string {
@@ -98,7 +107,62 @@ func ParseInteger(input string) int {
 }
 
 func ParseArray(input string) []string {
-	return []string{}
+	reader := readerForString(input[1:])
+
+	// read the array length
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		panic(err)
+	}
+
+	length, err := strconv.Atoi(string(line))
+	if err != nil {
+		panic(err)
+	}
+
+	result := make([]string, 0, length)
+
+	for i := 0; i < length; i++ {
+		line, _, err := reader.ReadLine()
+		if err != nil {
+			panic(err)
+		}
+		strLine := string(line)
+
+		// find the type of the line
+		respType, err := ParseRESPType(strLine)
+		if err != nil {
+			panic(err)
+		}
+
+		// parse the line based on its type
+		switch respType {
+		case SimpleString:
+			// TODO: parse next line and append
+		case Error:
+			result = append(result, ParseError(strLine))
+		case Integer:
+			result = append(result, strconv.Itoa(ParseInteger(strLine)))
+		case BulkString:
+			length, err := strconv.Atoi(strLine[1:])
+			if err != nil {
+				panic(err)
+			}
+
+			str, err := readStringFromReader(reader, length)
+			if err != nil {
+				panic(err)
+			}
+
+			result = append(result, str)
+		case Array:
+			fallthrough // we're not handling nested arrays
+		default:
+			panic("WTF")
+		}
+	}
+
+	return result
 }
 
 func readerForString(input string) *bufio.Reader {

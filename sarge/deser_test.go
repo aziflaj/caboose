@@ -115,5 +115,42 @@ func TestParseBulkString(t *testing.T) {
 }
 
 func TestParseArray(t *testing.T) {
-	t.Skip()
+	testCases := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{"Empty Array", "*0\r\n", []string{}},
+		{"Integer Array", "*4\r\n:-1\r\n:+2\r\n:30\r\n:7\r\n", []string{"-1", "2", "30", "7"}},
+		{
+			"Present Array",
+			"*3\r\n$5\r\nhello\r\n$5\r\nworld\r\n$1\r\n!\r\n",
+			[]string{"hello", "world", "!"},
+		},
+		{
+			"Echo command",
+			"*2\r\n$4\r\nECHO\r\n$5\r\nhello\r\n",
+			[]string{"ECHO", "hello"},
+		},
+		{
+			"Set command",
+			"*3\r\n$3\r\nSET\r\n$5\r\nhello\r\n$5\r\nworld\r\n",
+			[]string{"SET", "hello", "world"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			array := sarge.ParseArray(tc.input)
+			if len(array) != len(tc.expected) {
+				t.Errorf("Expected %v, got %v", tc.expected, array)
+			}
+
+			for i := range array {
+				if array[i] != tc.expected[i] {
+					t.Errorf("Expected %v, got %v", tc.expected, array)
+				}
+			}
+		})
+	}
 }
