@@ -10,7 +10,8 @@ import (
 type RESPType int
 
 const (
-	SimpleString = iota
+	WTF RESPType = iota
+	SimpleString
 	Error
 	Integer
 	BulkString
@@ -30,8 +31,7 @@ func ParseRESPType(input string) (RESPType, error) {
 	case '*':
 		return Array, nil
 	default:
-		// TODO: don't return Error type
-		return Error, errors.New("Invalid RESP type " + input)
+		return WTF, errors.New("Invalid RESP type " + input)
 	}
 }
 
@@ -72,11 +72,29 @@ func ParseSimpleString(input string) string {
 }
 
 func ParseError(input string) string {
-	return "Not Implemented"
+	reader := readerForString(input[1:])
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		panic(err)
+	}
+
+	return string(line)
 }
 
 func ParseInteger(input string) int {
-	return 0
+	reader := readerForString(input[1:])
+
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		panic(err)
+	}
+
+	i, err := strconv.Atoi(string(line))
+	if err != nil {
+		panic(err)
+	}
+
+	return i
 }
 
 func ParseArray(input string) []string {
