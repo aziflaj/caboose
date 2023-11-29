@@ -6,7 +6,7 @@ import (
 	"github.com/aziflaj/caboose/sarge"
 )
 
-func TestParseRESPType(t *testing.T) {
+func TestAssessRESPType(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    string
@@ -22,7 +22,7 @@ func TestParseRESPType(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			respType, _ := sarge.ParseRESPType(tc.input)
+			respType, _ := sarge.AssessRESPType(tc.input)
 			if respType != tc.expected {
 				t.Errorf("Expected %v, got %v", tc.expected, respType)
 			}
