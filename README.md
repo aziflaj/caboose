@@ -1,11 +1,38 @@
 # Caboose
 
-A Redis clone built in Go, because I had nothing better to do this afternoon.
+A Redis clone built in Go, because I had nothing better to do this afternoon. Named after [Michael J. Caboose](https://rvb.fandom.com/wiki/Michael_J._Caboose).
+
+## How to use it?
+
+Please don't. It's a Proof of Concept.
+
+Run `go run main.go` in a terminal window, it'll spawn a (_somewhat_) Redis-compatible server on `localhost:6900`. Send commands using `redis-cli`, like in the screenshot:
+```
+➜ redis-cli -p 6900 PING
+"PONG"
+➜ redis-cli -p 6900 ECHO Hi
+1) "Hi"
+➜ redis-cli -p 6900 ECHO to be or not to be... and other words
+1) "to"
+2) "be"
+3) "or"
+4) "not"
+5) "to"
+6) "be..."
+7) "and"
+8) "other"
+9) "words"
+➜ redis-cli -p 6900 whoami 
+(error) Unknown command: whoami
+```
+
 
 ## RESP
 TL;DR version of [REdis Serialization Protocol](https://redis.io/docs/reference/protocol-spec/).
 
-Disclaimer: I was lazy to read through the whole RESP specs, but I think I am implementing RESP 2.0
+> **Disclaimer:**
+> 
+> I was lazy to read through the whole RESP specs, but I think I am implementing RESP 2.0
 
 - RESP is a req/res protocol, with binary requests and responses (but they're ASCII-compatible)
 - All req/res are terminated by CRLF (`\r\n`)
