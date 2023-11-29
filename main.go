@@ -1,11 +1,9 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"io"
+	"log"
 	"net"
-	"reflect"
 	"strings"
 
 	"github.com/aziflaj/caboose/sarge"
@@ -17,7 +15,7 @@ func main() {
 		panic(err)
 	}
 	defer l.Close()
-	fmt.Println("Listening on port 6900")
+	log.Println("Listening on port 6900")
 
 	for {
 		conn, err := l.Accept()
@@ -25,54 +23,55 @@ func main() {
 			panic(err)
 		}
 
-		go func(conn net.Conn) {
-			// io.WriteString(conn, "Hello from TCP server\n")
-			buffer := make([]byte, 1024)
-			var bufferSize int
-
-			// buffer read loop
-			for {
-				n, err := conn.Read(buffer)
-				bufferSize += n
-				if errors.Is(err, io.EOF) {
-					fmt.Println("eof reached")
-					break
-				} else if err != nil {
-					panic(err)
-				}
-
-				break
-			}
-
-			data := buffer[:bufferSize]
-
-			// fmt.Println(string(data))
-			// parse RESP
-			req, err := sarge.Deserialize(string(data))
-			if err != nil {
-				panic(err)
-			}
-
-			fmt.Println(req.([]string))
-			reqArr := req.([]string)
-			fmt.Println(reflect.TypeOf(req))
-
-			// DO THE AI (if-else)
-			var res string
-			if reqArr[0] == "PING" {
-				if len(reqArr) > 1 {
-					res = sarge.SerializeArray(reqArr[1:])
-				} else {
-					res = sarge.SerializeBulkString("PONG")
-				}
-			}
-
-			// respond with RESP
-			io.Copy(conn, strings.NewReader(res))
-
-			// ???
-			// profit
-			conn.Close()
-		}(conn)
+		go requestHandler(conn)
 	}
+}
+
+func requestHandler(conn net.Conn) {
+	data, err := readFromConn(conn)
+	if err != nil {
+		panic(err)
+	}
+
+	// Step 1: parse RESP
+	req, err := sarge.Deserialize(string(data))
+	if err != nil {
+		panic(err)
+	}
+
+	reqArr := req.([]string)
+
+	// Step 2: DO THE AI (extremely nested if-else)
+	var res string
+	if reqArr[0] == "PING" {
+		if len(reqArr) > 1 {
+			res = sarge.SerializeArray(reqArr[1:])
+		} else {
+			res = sarge.SerializeBulkString("PONG")
+		}
+	} else if reqArr[0] == "ECHO" {
+		res = sarge.SerializeArray(reqArr[1:])
+	} else {
+		// format given command
+		command := strings.Join(reqArr, " ")
+		res = sarge.SerializeError("Unknown command: " + command)
+	}
+
+	// Step 3: respond with RESP
+	io.Copy(conn, strings.NewReader(res))
+
+	// Step 4: ???
+	// Step 5: Profit
+	conn.Close()
+}
+
+func readFromConn(conn net.Conn) (string, error) {
+	buffer := make([]byte, 1024)
+
+	n, err := conn.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	return string(buffer[:n]), nil
 }
