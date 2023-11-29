@@ -46,27 +46,12 @@ func ParseBulkString(input string) string {
 
 	strLine := string(line)
 
-	// convert the string length to an int
-	length, err := strconv.Atoi(strLine[1:])
-	if err != nil {
-		panic(err)
-	}
-
-	str, err := readStringFromReader(reader, length)
+	str, err := readBulkString(reader, strLine[1:])
 	if err != nil {
 		panic(err)
 	}
 
 	return str
-}
-
-func readStringFromReader(reader *bufio.Reader, length int) (string, error) {
-	line, _, err := reader.ReadLine()
-	if err != nil {
-		return "", err
-	}
-
-	return string(line[:length]), nil
 }
 
 func ParseSimpleString(input string) string {
@@ -144,12 +129,7 @@ func ParseArray(input string) []string {
 		case Integer:
 			result = append(result, strconv.Itoa(ParseInteger(strLine)))
 		case BulkString:
-			length, err := strconv.Atoi(strLine[1:])
-			if err != nil {
-				panic(err)
-			}
-
-			str, err := readStringFromReader(reader, length)
+			str, err := readBulkString(reader, strLine[1:]) // [1:] to skip the leading '$'
 			if err != nil {
 				panic(err)
 			}
@@ -167,4 +147,20 @@ func ParseArray(input string) []string {
 
 func readerForString(input string) *bufio.Reader {
 	return bufio.NewReader(strings.NewReader(input))
+}
+
+func readBulkString(reader *bufio.Reader, strLine string) (string, error) {
+	// read the string length
+	length, err := strconv.Atoi(strLine)
+	if err != nil {
+		return "", err
+	}
+
+	// read the actual string
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		return "", err
+	}
+
+	return string(line[:length]), nil
 }
