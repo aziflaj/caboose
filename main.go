@@ -6,9 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/aziflaj/caboose/megahash"
-	"github.com/aziflaj/caboose/omalley"
-	"github.com/aziflaj/caboose/sarge"
+	"github.com/aziflaj/caboose/vic"
 )
 
 func main() {
@@ -19,7 +17,7 @@ func main() {
 	defer l.Close()
 
 	// global store
-	store := megahash.NewMegahashTable()
+	store := vic.NewKVStore()
 	log.Println("Listening on port 6900")
 
 	for {
@@ -32,32 +30,17 @@ func main() {
 	}
 }
 
-func requestHandler(conn net.Conn, store *megahash.MegahashTable) {
+func requestHandler(conn net.Conn, store *vic.KVStore) {
 	data, err := readFromConn(conn)
 	if err != nil {
 		panic(err)
 	}
 
-	// Step 1: parse RESP
-	req, err := sarge.Deserialize(string(data))
-	if err != nil {
-		panic(err)
-	}
+	res := vic.HandleRequest(store, data)
 
-	reqArr := req.([]string)
-	// log.Println(reqArr)
+	log.Println(res)
 
-	// Step 2: Very Intricate AI (deeply nested if-else)
-	command := reqArr[0]
-	args := reqArr[1:]
-	// log.Println(command, args)
-	res := omalley.Execute(store, command, args)
-
-	// Step 3: respond with RESP
 	io.Copy(conn, strings.NewReader(res))
-
-	// Step 4: ???
-	// Step 5: Profit
 	conn.Close()
 }
 

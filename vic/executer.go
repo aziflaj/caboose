@@ -1,13 +1,12 @@
-package omalley
+package vic
 
 import (
 	"strings"
 
-	"github.com/aziflaj/caboose/megahash"
 	"github.com/aziflaj/caboose/sarge"
 )
 
-func Execute(store *megahash.MegahashTable, command string, args []string) string {
+func Execute(store *KVStore, command string, args []string) string {
 	switch strings.ToUpper(command) {
 	case "PING":
 		return ping(args)
@@ -18,7 +17,7 @@ func Execute(store *megahash.MegahashTable, command string, args []string) strin
 	case "GET":
 		return get(store, args)
 	case "DELETE":
-		return delete(store, args)
+		return deleteKey(store, args)
 	case "EXISTS":
 		return exists(store, args)
 	case "KEYS":
@@ -39,7 +38,7 @@ func echo(args []string) string {
 	return sarge.SerializeArray(args)
 }
 
-func set(store *megahash.MegahashTable, args []string) string {
+func set(store *KVStore, args []string) string {
 	if len(args) != 2 {
 		return sarge.SerializeError("Wrong number of arguments for SET")
 	}
@@ -49,7 +48,7 @@ func set(store *megahash.MegahashTable, args []string) string {
 	return sarge.SerializeBulkString("OK")
 }
 
-func get(store *megahash.MegahashTable, args []string) string {
+func get(store *KVStore, args []string) string {
 	if len(args) != 1 {
 		return sarge.SerializeError("Wrong number of arguments for GET")
 	}
@@ -60,7 +59,7 @@ func get(store *megahash.MegahashTable, args []string) string {
 }
 
 // TODO: you were too lazy to implement bools
-func exists(store *megahash.MegahashTable, args []string) string {
+func exists(store *KVStore, args []string) string {
 	if len(args) != 1 {
 		return sarge.SerializeError("Wrong number of arguments for EXISTS")
 	}
@@ -73,7 +72,7 @@ func exists(store *megahash.MegahashTable, args []string) string {
 	return sarge.SerializeInteger(0)
 }
 
-func delete(store *megahash.MegahashTable, args []string) string {
+func deleteKey(store *KVStore, args []string) string {
 	if len(args) != 1 {
 		return sarge.SerializeError("Wrong number of arguments for DELETE")
 	}
@@ -83,7 +82,7 @@ func delete(store *megahash.MegahashTable, args []string) string {
 	return sarge.SerializeBulkString("OK")
 }
 
-func keys(store *megahash.MegahashTable, args []string) string {
+func keys(store *KVStore, args []string) string {
 	if len(args) != 0 {
 		return sarge.SerializeError("Wrong number of arguments for KEYS")
 	}

@@ -19,7 +19,7 @@ const (
 )
 
 func Deserialize(input string) (interface{}, error) {
-	respType, err := AssessRESPType(input)
+	respType, err := assessRESPType(input)
 	if err != nil {
 		return nil, err
 	}
@@ -37,23 +37,6 @@ func Deserialize(input string) (interface{}, error) {
 		return ParseArray(input)
 	default:
 		return nil, errors.New("WTF")
-	}
-}
-
-func AssessRESPType(input string) (RESPType, error) {
-	switch input[0] {
-	case '+':
-		return SimpleString, nil
-	case '-':
-		return Error, nil
-	case ':':
-		return Integer, nil
-	case '$':
-		return BulkString, nil
-	case '*':
-		return Array, nil
-	default:
-		return WTF, errors.New("Invalid RESP type " + input)
 	}
 }
 
@@ -137,7 +120,7 @@ func ParseArray(input string) ([]string, error) {
 		strLine := string(line)
 
 		// find the type of the line
-		respType, err := AssessRESPType(strLine)
+		respType, err := assessRESPType(strLine)
 		if err != nil {
 			return nil, err
 		}
@@ -177,6 +160,23 @@ func ParseArray(input string) ([]string, error) {
 
 func readerForString(input string) *bufio.Reader {
 	return bufio.NewReader(strings.NewReader(input))
+}
+
+func assessRESPType(input string) (RESPType, error) {
+	switch input[0] {
+	case '+':
+		return SimpleString, nil
+	case '-':
+		return Error, nil
+	case ':':
+		return Integer, nil
+	case '$':
+		return BulkString, nil
+	case '*':
+		return Array, nil
+	default:
+		return WTF, errors.New("Invalid RESP type " + input)
+	}
 }
 
 func readBulkString(reader *bufio.Reader, strLine string) (string, error) {

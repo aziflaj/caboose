@@ -6,30 +6,6 @@ import (
 	"github.com/aziflaj/caboose/sarge"
 )
 
-func TestAssessRESPType(t *testing.T) {
-	testCases := []struct {
-		name     string
-		input    string
-		expected sarge.RESPType
-	}{
-		{"SimpleString", "+", sarge.SimpleString},
-		{"Error", "-", sarge.Error},
-		{"Integer", ":", sarge.Integer},
-		{"BulkString", "$", sarge.BulkString},
-		{"Array", "*", sarge.Array},
-		{"Invalid", "!", sarge.WTF},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			respType, _ := sarge.AssessRESPType(tc.input)
-			if respType != tc.expected {
-				t.Errorf("Expected %v, got %v", tc.expected, respType)
-			}
-		})
-	}
-}
-
 func TestParseSimpleString(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -42,7 +18,7 @@ func TestParseSimpleString(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			simpleString := sarge.ParseSimpleString(tc.input)
+			simpleString, _ := sarge.ParseSimpleString(tc.input)
 			if simpleString != tc.expected {
 				t.Errorf("Expected %v, got %v", tc.expected, simpleString)
 			}
@@ -64,7 +40,7 @@ func TestParseError(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := sarge.ParseError(tc.input)
+			err, _ := sarge.ParseError(tc.input)
 			if err != tc.expected {
 				t.Errorf("Expected %v, got %v", tc.expected, err)
 			}
@@ -85,7 +61,7 @@ func TestParseInteger(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			integer := sarge.ParseInteger(tc.input)
+			integer, _ := sarge.ParseInteger(tc.input)
 			if integer != tc.expected {
 				t.Errorf("Expected %v, got %v", tc.expected, integer)
 			}
@@ -106,7 +82,7 @@ func TestParseBulkString(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			bulkString := sarge.ParseBulkString(tc.input)
+			bulkString, _ := sarge.ParseBulkString(tc.input)
 			if bulkString != tc.expected {
 				t.Errorf("Expected %v, got %v", tc.expected, bulkString)
 			}
@@ -141,7 +117,7 @@ func TestParseArray(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			array := sarge.ParseArray(tc.input)
+			array, _ := sarge.ParseArray(tc.input)
 			if len(array) != len(tc.expected) {
 				t.Errorf("Expected %v, got %v", tc.expected, array)
 			}
