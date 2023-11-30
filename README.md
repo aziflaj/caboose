@@ -8,8 +8,7 @@ Please don't. It's a Proof of Concept.
 
 Run `go run main.go` in a terminal window, it'll spawn a (_somewhat_) Redis-compatible server on `localhost:6900`. Send commands using `redis-cli`, like in the screenshot:
 
-<img width="700" alt="sc" src="https://github.com/aziflaj/caboose/assets/5219775/940e681e-ed29-4ef6-9405-de2c6278772a">
-
+![sc](https://github.com/aziflaj/caboose/assets/5219775/c762a28b-f900-4cd3-9179-f908484c52ff)
 
 ## RESP
 TL;DR version of [REdis Serialization Protocol](https://redis.io/docs/reference/protocol-spec/).
